@@ -1,0 +1,61 @@
+<div class="container py-5">
+  <div class="row mb-5">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6 mx-auto">
+      <div class="bg-white shadow rouded p-4">
+        <h1 class="display-6 text-dark">Créer une annonce</h1>
+        <hr class="bg-dark mb-5">
+        <form [formGroup]="offerForm" (ngSubmit)="onSubmitOfferForm()">
+          <div class="form-group mb-3">
+            <label for="offerTitleInput">Titre</label>
+            <input type="text" formControlName="title" id="offerTitleInput" class="form-control">
+          </div>
+          <div class="form-group mb-3">
+            <label for="offerBrandInput">Marque</label>
+            <input type="text" formControlName="brand" id="offerBrandInput" class="form-control">
+          </div>
+          <div class="form-group mb-3">
+            <label for="offerModelInput">Modèle</label>
+            <input type="text" formControlName="model" id="offerModelInput" class="form-control">
+          </div>
+          <div class="form-group mb-3">
+            <label for="offerModelInput">Description</label>
+            <textarea id="offerDescriptionInput" formControlName="description" class="w-100 form-control" rows="5"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="offerPriceInput">Prix</label>
+            <input type="number" formControlName="price" id="offerPriceInput" class="form-control">
+          </div>
+          <div class="d-flex">
+            <button class="btn btn-success mx-auto" type="submit" [disabled]="offerForm.invalid">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+      <div class="bg-white shadow p-4 rounded">
+        <h1 class="display-6 text-dark">Annonces enregistrées</h1>
+        <hr class="bg-dark mb-5">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Titre</th>
+              <th scope="col">Voiture</th>
+              <th scope="col">Prix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let offer of offers; let i=index">
+              <th>{{ i }}</th>
+              <td> {{ offer.title }}</td>
+              <td> {{ offer.brand }} {{ offer.model }}</td>
+              <td> {{ offer.price }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
