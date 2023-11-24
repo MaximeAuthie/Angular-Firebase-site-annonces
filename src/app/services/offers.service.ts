@@ -10,7 +10,7 @@ export class OffersService {
   //! Données (en privée pour le pas être modifiées depuis l'extérieur du service)
   private offers: Offer[] = [
     {
-      title: 'Renault Captur 1.5L DCI 175000 km',
+      title: 'renault Captur 1.5L DCI 175000 km',
       brand: 'Renault',
       model: 'Captur',
       description: 'Bon état général',

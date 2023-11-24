@@ -51,9 +51,9 @@
           <tbody>
             <tr *ngFor="let offer of offers; let i=index">
               <th>{{ i }}</th>
-              <td> {{ offer.title }}</td>
+              <td> {{ offer.title | firstCharUppercase }}</td>
               <td> {{ offer.brand }} {{ offer.model }}</td>
-              <td> {{ offer.price }}</td>
+              <td> {{ offer.price | currency:'EUR':'symbol':'4.2-2':'fr'}}</td>
               <td>
                 <button class="btn btn-primary me-1" type="button" (click)="onEditOffer(offer, i)">Modifier</button>
                 <button class="btn btn-danger" type="button" (click)="onDeleteOffer(i)">Supprimer</button>
