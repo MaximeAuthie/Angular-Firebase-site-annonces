@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Offer } from 'src/app/Interfaces/offer';
+import { OffersService } from 'src/app/services/offers.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,18 +14,20 @@ export class DashboardComponent implements OnInit {
   //! Variables
   offerForm!: FormGroup
 
-  offers: any[] = [];
+  offers: Offer[] = [];
 
   currentCar:any;
 
   constructor(
-    private formBuilder: FormBuilder
-  ) { }
+    private formBuilder: FormBuilder,
+    private offersService: OffersService
+  ) {}
+
 
   //!Méthodes
-
   ngOnInit() {
     this.initOfferForm();
+    this.offers = this.offersService.getOffers();
   }
 
   //? Initaliser le formulaire
@@ -46,10 +50,10 @@ export class DashboardComponent implements OnInit {
     // Vérifier s'il s'agit d'une création ou d'une mise à jour d'une annonce
     if ( offerIndex == null || offerIndex == undefined ) {
       delete offer.index;
-      this.offers.push(offer);
+      this.offers = this.offersService.createOffer(offer);
     } else {
       delete offer.index;
-      this.offers[offerIndex] = offer;
+      this.offers = this.offersService.editOffer(offer, offerIndex);
     }
 
     // Réinitialiser le formulaire
@@ -58,11 +62,11 @@ export class DashboardComponent implements OnInit {
 
   //? Supprimer une offre
   onDeleteOffer(index: number):void {
-    this.offers.splice(index,1);
+    this.offers = this.offersService.deleteOffer(index);
   }
 
   //? Charger l'annonce à modifier dans le formualire
-  onEditOffer(offer: any, index: number):void {
-    this.offerForm.setValue({...offer, index}); //ici, je passe un oblet en paramètre, dans lequel je déconstruis mon objet "offer" pour y ajouter "index"
+  onEditOffer(offer: Offer, index: number):void {
+    this.offerForm.setValue({...offer, index}); //ici, je passe un objet en paramètre, dans lequel je déconstruis mon objet "offer" pour y ajouter "index"
   }
 }
