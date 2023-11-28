@@ -27,7 +27,12 @@ export class DashboardComponent implements OnInit {
   //!Méthodes
   ngOnInit() {
     this.initOfferForm();
-    this.offers = this.offersService.getOffers();
+    this.offersService.getOffers().subscribe({
+      next: (offers: Offer[]) => this.offers = this.offers,
+      complete: () => console.log('Observable complete'),
+      error: (error) => console.error(console.error(),
+      )
+    });
   }
 
   //? Initaliser le formulaire
