@@ -1,0 +1,9 @@
+{
+  "hosting": [
+    {
+      "target": "car-sell",
+      "source": ".",
+      "frameworksBackend": {}
+    }
+  ]
+}
