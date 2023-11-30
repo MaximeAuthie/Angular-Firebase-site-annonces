@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { Offer } from 'src/app/Interfaces/offer';
 import { OffersService } from 'src/app/services/offers.service';
 
@@ -9,7 +10,7 @@ import { OffersService } from 'src/app/services/offers.service';
   styleUrls: ['./dashboard.component.scss']
 })
 
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
 
   //! Variables
   offerForm!: FormGroup
@@ -17,6 +18,8 @@ export class DashboardComponent implements OnInit {
   offers: Offer[] = [];
 
   currentCar:any;
+
+  subscription!: Subscription;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -27,12 +30,12 @@ export class DashboardComponent implements OnInit {
   //!Méthodes
   ngOnInit() {
     this.initOfferForm();
-    this.offersService.getOffers().subscribe({
-      next: (offers: Offer[]) => this.offers = this.offers,
+    this.subscription = this.offersService.offersSubject.subscribe({
+      next: (offers: Offer[]) => this.offers = offers,
       complete: () => console.log('Observable complete'),
-      error: (error) => console.error(console.error(),
-      )
+      error: (error) => console.error(error)
     });
+    this.offersService.dispachOffers();
   }
 
   //? Initaliser le formulaire
@@ -73,5 +76,10 @@ export class DashboardComponent implements OnInit {
   //? Charger l'annonce à modifier dans le formualire
   onEditOffer(offer: Offer, index: number):void {
     this.offerForm.setValue({...offer, index}); //ici, je passe un objet en paramètre, dans lequel je déconstruis mon objet "offer" pour y ajouter "index"
+  }
+
+  //? Action à réaliser lors de la destruction du composant
+  ngOnDestroy(): void {
+      this.subscription.unsubscribe();
   }
 }
