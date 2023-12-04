@@ -35,13 +35,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       complete: () => console.log('Observable complete'),
       error: (error) => console.error(error)
     });
-    this.offersService.dispachOffers();
+    this.offersService.getOffers();
   }
 
   //? Initaliser le formulaire
   initOfferForm(): void {
     this.offerForm = this.formBuilder.group({
-      index: [0],
+      index: [null],
       title: ['', [Validators.required, Validators.minLength(25)]],
       brand: '',
       model: '',
@@ -58,7 +58,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Vérifier s'il s'agit d'une création ou d'une mise à jour d'une annonce
     if ( offerIndex == null || offerIndex == undefined ) {
       delete offer.index;
-      this.offers = this.offersService.createOffer(offer);
+      this.offersService.createOffer(offer).catch(console.error);
     } else {
       delete offer.index;
       this.offers = this.offersService.editOffer(offer, offerIndex);
