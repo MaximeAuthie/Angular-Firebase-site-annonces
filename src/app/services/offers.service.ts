@@ -15,7 +15,9 @@ export class OffersService {
   offersSubject: BehaviorSubject<Offer[]> = new BehaviorSubject(<Offer[]>[]);
 
   //! Constructeur
-  constructor(private db: AngularFireDatabase) {}
+  constructor(private db: AngularFireDatabase) {
+    this.getOffersOn();
+  }
 
   //! Méthodes
 
@@ -26,17 +28,34 @@ export class OffersService {
       //? Récupérer un objet contenant les documents retournés par la requête
       const offerSnapshopValue = snapshop.val();
 
-      //? Transformer l'objet offerSnapshopValue en array
-      const offerArray = Object.keys(offerSnapshopValue).map((id) => ({id, ...offerSnapshopValue[id]}));
-      // On construit ici un tableau en itérant sur un tableau d'id pour récupérer le contenu de chaque objet (document) dans le snapshot
+      //? On vérifie si des offres sont renvoyées par la BDD pour éviter une erreur dans le navigateur s'il n'y a pas d'offres
+      if (offerSnapshopValue) {
+        //? Transformer l'objet offerSnapshopValue en array
+        const offerArray = Object.keys(offerSnapshopValue).map((id) => ({id, ...offerSnapshopValue[id]}));
+        // On construit ici un tableau en itérant sur un tableau d'id pour récupérer le contenu de chaque objet (document) dans le snapshot
 
-      //? Mettre à jour la data "offers" du service
-      this.offers = offerArray;
+        //? Mettre à jour la data "offers" du service
+        this.offers = offerArray;
+      }
 
       //? Mettre à jour l'observable pour infomer les composants ayant souscrit que la liste des offres à été mise à jour
-      this.dispachOffers();
+        this.dispachOffers();
 
     });
+  }
+
+  getOffersOn():void {
+    this.db.list('offers').query.limitToLast(10).on('value', snapshot => {
+
+      //? Récupérer un objet contenant les documents retournés par la requête
+      const offerSnapshopValue = snapshot.val();
+
+      //? Transformer l'objet offerSnapshopValue en array
+      const offersArray = Object.keys(offerSnapshopValue).map((id) => ({id, ...offerSnapshopValue[id]}));
+
+      console.log(offersArray);
+
+    })
   }
 
   dispachOffers(): void {
@@ -57,14 +76,30 @@ export class OffersService {
     })
   }
 
-  editOffer(offer: Offer, index: number): Offer[] {
-    this.offers[index] = offer;
-    return this.offers;
+  editOffer(offer: Offer, offerId: string): Promise<Offer> {
+    return new Promise((resolve, reject)=> {
+      this.db.list('offers').update(offerId, offer)
+        .then(() => {
+          const updatedOffer = {...offer, id: offerId};
+          const offerToUpdateIndex = this.offers.findIndex((item) => item.id === offerId) // On ajoute l'offre à la data du service
+          this.offers[offerToUpdateIndex] = updatedOffer;
+          this.dispachOffers(); // On appelle la méthode permettant de mettre à jour l'observable
+          resolve(updatedOffer); // On retourne l'offre créée
+        })
+        .catch((reject) => console.log(reject));
+    })
   }
 
-  deleteOffer(offerIndex: number): Offer[] {
-    this.offers.splice(offerIndex, 1);
-    return this.offers;
+  deleteOffer(offerId: string): Promise<Offer> {
+    return new Promise((resolve, reject) => {
+      this.db.list('offers').remove(offerId)
+        .then(() => {
+          const offerToRemove = this.offers.findIndex((item) => item.id === offerId);
+          this.offers.splice(offerToRemove,1);
+          this.dispachOffers();
+        })
+        .catch((reject) => console.log(reject))
+    })
   }
 
 }

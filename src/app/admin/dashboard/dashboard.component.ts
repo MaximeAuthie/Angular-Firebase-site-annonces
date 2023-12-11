@@ -41,7 +41,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   //? Initaliser le formulaire
   initOfferForm(): void {
     this.offerForm = this.formBuilder.group({
-      index: [null],
+      id: [null],
       title: ['', [Validators.required, Validators.minLength(25)]],
       brand: '',
       model: '',
@@ -52,16 +52,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   //? Soumettre le formulaire et ajouter l'offre au tableau "offers"
   onSubmitOfferForm(): void {
-    const offerIndex = this.offerForm.value.index;
+    const offerId = this.offerForm.value.id;
     let offer = this.offerForm.value;
 
     // Vérifier s'il s'agit d'une création ou d'une mise à jour d'une annonce
-    if ( offerIndex == null || offerIndex == undefined ) {
+    if (!offerId || offerId && offerId === '') {
       delete offer.index;
       this.offersService.createOffer(offer).catch(console.error);
     } else {
       delete offer.index;
-      this.offers = this.offersService.editOffer(offer, offerIndex);
+      this.offersService.editOffer(offer, offerId).catch(console.error);
     }
 
     // Réinitialiser le formulaire
@@ -69,13 +69,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   //? Supprimer une offre
-  onDeleteOffer(index: number):void {
-    this.offers = this.offersService.deleteOffer(index);
+  onDeleteOffer(offerId?: string):void { // ici on type offeId comme un string ou un undifined
+    if (offerId) {
+      this.offersService.deleteOffer(offerId).catch(console.error);
+    } else {
+      console.error('An id must be provided');
+    }
   }
 
   //? Charger l'annonce à modifier dans le formualire
-  onEditOffer(offer: Offer, index: number):void {
-    this.offerForm.setValue({...offer, index}); //ici, je passe un objet en paramètre, dans lequel je déconstruis mon objet "offer" pour y ajouter "index"
+  onEditOffer(offer: Offer):void {
+    this.offerForm.setValue({
+      id: offer.id ? offer.id : '',
+      title: offer.title ? offer.title : '',
+      brand: offer.brand ? offer.brand : '',
+      model: offer.model ? offer.model : '',
+      price: offer.price ? offer.price : 0,
+      description: offer.description ? offer.description : ''
+    }); //ici, je passe un objet en paramètre, dans lequel je déconstruis mon objet "offer" pour y ajouter "index"
   }
 
   //? Action à réaliser lors de la destruction du composant
