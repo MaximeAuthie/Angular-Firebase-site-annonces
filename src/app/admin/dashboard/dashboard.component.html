@@ -10,6 +10,13 @@
             <label for="offerTitleInput">Titre</label>
             <input type="text" formControlName="title" id="offerTitleInput" class="form-control">
           </div>
+          <div class="form-group mb-3" *ngIf="currentOfferPhotoUrl">
+            <img [src]="currentOfferPhotoUrl | safeUrl" alt="Offer photo" class="w-100 rounded">
+          </div>
+          <div class="form-group mb-3">
+            <label for="offerPhotoInput" class="form-label">Choisir une image</label>
+            <input type="file" id="offerPhotoInput" class="form-control" formControlName="photo" (change)="onChangeOfferPhoto($event)">
+          </div>
           <div class="form-group mb-3">
             <label for="offerBrandInput">Marque</label>
             <input type="text" formControlName="brand" id="offerBrandInput" class="form-control" appUppercaseInput>
@@ -42,6 +49,7 @@
           <thead>
             <tr>
               <th scope="col">#</th>
+              <th scope="col">Photo</th>
               <th scope="col">Titre</th>
               <th scope="col">Voiture</th>
               <th scope="col">Prix</th>
@@ -51,6 +59,9 @@
           <tbody>
             <tr *ngFor="let offer of offers; let i=index">
               <th>{{ i }}</th>
+              <th>
+                <img *ngIf="offer.photo" [src]="offer.photo | safeUrl" alt="Offer photo" width="90">
+              </th>
               <td> {{ offer.title | firstCharUppercase }}</td>
               <td> {{ offer.brand }} {{ offer.model }}</td>
               <td> {{ offer.price | currency:'EUR':'symbol':'4.2-2':'fr'}}</td>

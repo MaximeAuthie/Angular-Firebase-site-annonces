@@ -21,6 +21,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   subscription!: Subscription;
 
+  currentOfferPhotoFile!: any;
+
+  currentOfferPhotoUrl!: string;
+
   constructor(
     private formBuilder: FormBuilder,
     private offersService: OffersService
@@ -43,6 +47,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.offerForm = this.formBuilder.group({
       id: [null],
       title: ['', [Validators.required, Validators.minLength(25)]],
+      photo: [],
       brand: '',
       model: '',
       description: '',
@@ -58,7 +63,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Vérifier s'il s'agit d'une création ou d'une mise à jour d'une annonce
     if (!offerId || offerId && offerId === '') {
       delete offer.index;
-      this.offersService.createOffer(offer).catch(console.error);
+      console.log("create");
+
+      this.offersService.createOffer(offer, this.currentOfferPhotoFile).then((res) => console.log(res)).catch(console.error);
     } else {
       delete offer.index;
       this.offersService.editOffer(offer, offerId).catch(console.error);
@@ -66,6 +73,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Réinitialiser le formulaire
     this.offerForm.reset();
+
+    // Réinitialiser la data this.currentPḧotoFile pour que l'image qu'il stocke ne soit pas ajouté à la procahin soumission du formulaire
+    this.currentOfferPhotoFile= null;
+
   }
 
   //? Supprimer une offre
@@ -75,6 +86,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       console.error('An id must be provided');
     }
+  }
+
+  //? Méthode servant à interpréter un changement dans l'input d'ajout d'un fichier
+  onChangeOfferPhoto($event: any): void {
+
+    // Stocker le fichier sélectionné dans la data this.currentOfferPhotoFile
+    this.currentOfferPhotoFile = $event.target.files[0];
+
+    // Stocker l'url temporaire du fichier dans la data this.currentOfferPhotoUrl
+    const fileReader = new FileReader(); // Permet de lire le contenu d'un fichier de manière asynchrone
+    fileReader.readAsDataURL(this.currentOfferPhotoFile); // Permet d'obtenir une url du fichier
+    fileReader.onloadend = (event) => {
+      this.currentOfferPhotoUrl = <string>event.target?.result;
+    }; // Une fois que la lecture du fichier est terminée, on affecte le résultat à la data this.currentOfferPhotoUrl
   }
 
   //? Charger l'annonce à modifier dans le formualire

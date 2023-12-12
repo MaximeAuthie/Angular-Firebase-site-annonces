@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Offer } from 'src/app/Interfaces/offer';
 
@@ -15,7 +16,7 @@ export class OffersService {
   offersSubject: BehaviorSubject<Offer[]> = new BehaviorSubject(<Offer[]>[]);
 
   //! Constructeur
-  constructor(private db: AngularFireDatabase) {
+  constructor(private db: AngularFireDatabase, private storage: AngularFireStorage) {
     this.getOffersOn();
   }
 
@@ -62,18 +63,28 @@ export class OffersService {
     this.offersSubject.next(this.offers);
   }
 
-  createOffer(offer: Offer): Promise<Offer> {
-    return new Promise((resolve, reject) => {
-      this.db.list('offers')
-        .push(offer)
-        .then(res => {
-          const createOffer = {...offer, id: <string>res.key};
-          this.offers.push(createOffer); // On ajoute l'offre à la data du service
-          this.dispachOffers(); // On appelle la méthode permettant de mettre à jour l'observable
-          resolve(createOffer); // On retourne l'offre créée
-        })
-        .catch(reject);
-    })
+  async createOffer(offer: Offer, offerPhoto?: any): Promise<Offer> {
+    console.log({offer, offerPhoto});
+
+    try {
+      console.log("try");
+      //? Si l'utilisateur ajoute une photo, on l'upload avec la méthode privée uploadPhoto() qui nous retourne une URL
+      const photoUrl = offerPhoto ? await this.uploadPhoto(offerPhoto) : '';
+
+
+      //? On ajoute l'offre dans la BDD
+      const response = await this.db.list('offers').push({...offer, photo: photoUrl});
+      console.log(response);
+
+      //? On créé une constante pour reconstituer l'offre et on l'ajoute à la data this.offers avant de la retourner
+      const createdOffer = {...offer, photo: photoUrl, id: <string>response.key};
+      this.offers.push(createdOffer); // On ajoute l'offre à la data du service
+      this.dispachOffers(); // On appelle la méthode permettant de mettre à jour l'observable
+      return createdOffer;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   editOffer(offer: Offer, offerId: string): Promise<Offer> {
@@ -102,4 +113,12 @@ export class OffersService {
     })
   }
 
+  private uploadPhoto(photo: any): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const upload = this.storage.upload('offers/'+ Date.now().toString() + '-' +photo.name, photo); // on créé un chemin unique en concaténant le nom du fichier et la date d'upload
+      upload
+        .then((res) =>resolve(res.ref.getDownloadURL())) //On récupère ici l'URL du ffichier une fois qu'il a été upload dans Firebase
+        .catch(reject);
+    })
+  }
 }
