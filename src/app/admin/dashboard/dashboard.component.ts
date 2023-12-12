@@ -60,22 +60,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const offerId = this.offerForm.value.id;
     let offer = this.offerForm.value;
 
+    const offerPhotoUrl = this.offers.find((item) => item.id === offerId)?.photo;
+    offer = {...offer, photo: offerPhotoUrl};;
+
     // Vérifier s'il s'agit d'une création ou d'une mise à jour d'une annonce
     if (!offerId || offerId && offerId === '') {
-      delete offer.index;
-      console.log("create");
+      delete offer.id;
 
       this.offersService.createOffer(offer, this.currentOfferPhotoFile).then((res) => console.log(res)).catch(console.error);
     } else {
-      delete offer.index;
-      this.offersService.editOffer(offer, offerId).catch(console.error);
+      delete offer.id;
+      this.offersService.editOffer(offer, offerId, this.currentOfferPhotoFile).catch(console.error);
     }
 
     // Réinitialiser le formulaire
     this.offerForm.reset();
 
     // Réinitialiser la data this.currentPḧotoFile pour que l'image qu'il stocke ne soit pas ajouté à la procahin soumission du formulaire
-    this.currentOfferPhotoFile= null;
+    this.currentOfferPhotoFile = null;
+
+    // Réinitialiser la data this.currentOfferPhotoUrl pour enlever la photo affichée dans le formulaire une fois quil a été soumis
+    this.currentOfferPhotoUrl = '';
 
   }
 
@@ -102,11 +107,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }; // Une fois que la lecture du fichier est terminée, on affecte le résultat à la data this.currentOfferPhotoUrl
   }
 
-  //? Charger l'annonce à modifier dans le formualire
+  //? Charger l'annonce à modifier dans le formulaire (en cliquant sur le bouton 'modifier')
   onEditOffer(offer: Offer):void {
+    this.currentOfferPhotoUrl = <string>offer.photo;
     this.offerForm.setValue({
       id: offer.id ? offer.id : '',
       title: offer.title ? offer.title : '',
+      photo: '',
       brand: offer.brand ? offer.brand : '',
       model: offer.model ? offer.model : '',
       price: offer.price ? offer.price : 0,

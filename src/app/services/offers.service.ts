@@ -67,18 +67,17 @@ export class OffersService {
     console.log({offer, offerPhoto});
 
     try {
-      console.log("try");
+
       //? Si l'utilisateur ajoute une photo, on l'upload avec la méthode privée uploadPhoto() qui nous retourne une URL
       const photoUrl = offerPhoto ? await this.uploadPhoto(offerPhoto) : '';
 
-
       //? On ajoute l'offre dans la BDD
       const response = await this.db.list('offers').push({...offer, photo: photoUrl});
-      console.log(response);
 
       //? On créé une constante pour reconstituer l'offre et on l'ajoute à la data this.offers avant de la retourner
       const createdOffer = {...offer, photo: photoUrl, id: <string>response.key};
       this.offers.push(createdOffer); // On ajoute l'offre à la data du service
+
       this.dispachOffers(); // On appelle la méthode permettant de mettre à jour l'observable
       return createdOffer;
     } catch (error) {
@@ -87,38 +86,82 @@ export class OffersService {
     }
   }
 
-  editOffer(offer: Offer, offerId: string): Promise<Offer> {
-    return new Promise((resolve, reject)=> {
-      this.db.list('offers').update(offerId, offer)
-        .then(() => {
-          const updatedOffer = {...offer, id: offerId};
-          const offerToUpdateIndex = this.offers.findIndex((item) => item.id === offerId) // On ajoute l'offre à la data du service
-          this.offers[offerToUpdateIndex] = updatedOffer;
-          this.dispachOffers(); // On appelle la méthode permettant de mettre à jour l'observable
-          resolve(updatedOffer); // On retourne l'offre créée
-        })
-        .catch((reject) => console.log(reject));
-    })
+  async editOffer(offer: Offer, offerId: string, newOfferPhoto?: any): Promise<Offer> {
+    try {
+
+      //? Si l'argument newOfferPhoto a été renseigné et si l'offre à déjà une photo, supprimer l'ancienne photo (offer.photo)
+      if (newOfferPhoto && offer.photo && offer.photo !== '') {
+        await this.removePhoto(offer.photo);
+      }
+
+      //? Si une nouvelle photo est fournie, ajouter la nouvelle photo à la BDD
+      if (newOfferPhoto) {
+        const newPhotoUrl = await this.uploadPhoto(newOfferPhoto);
+
+        // Modifier l'URL de offer avec l'url de la nouvelle photo
+        offer.photo = newPhotoUrl;
+
+      }
+
+      // Mettre l'offre à jour dans la BDD
+      await this.db.list('offers').update(offerId, offer)
+
+      // Mettre à jour l'offre dans la data thios.offers
+      const updatedOffer = {...offer ,id: offerId};
+      const offerToUpdateIndex = this.offers.findIndex((item) => item.id === offerId); // On cherche l'index de l'offre à modifier dans la data this.offers
+      this.offers[offerToUpdateIndex] = updatedOffer;
+
+      // Mettre à jour l'observable
+      this.dispachOffers();
+
+      // Retourner l'offre modifiée
+      return updatedOffer;
+
+    } catch (error) {
+      throw error;
+    }
   }
 
-  deleteOffer(offerId: string): Promise<Offer> {
-    return new Promise((resolve, reject) => {
-      this.db.list('offers').remove(offerId)
-        .then(() => {
-          const offerToRemove = this.offers.findIndex((item) => item.id === offerId);
-          this.offers.splice(offerToRemove,1);
-          this.dispachOffers();
-        })
-        .catch((reject) => console.log(reject))
-    })
+  async deleteOffer(offerId: string): Promise<Offer> {
+
+    try {
+      const offerToDeleteIndex = this.offers.findIndex((item) => item.id === offerId);
+      const offerToDelete = this.offers[offerToDeleteIndex];
+
+      //? Si l'offre possède une photo, on appelle la méthode asynchrone this.removePhoto()
+      if (offerToDelete.photo && offerToDelete.photo !== '') {
+        await this.removePhoto(offerToDelete.photo);
+      }
+
+      //? Appeller la méthode asynchrone remove de AngularFireDatabase et ensuite on supprime l'offre de la data this.offers
+      await this.db.list('offers').remove(offerId);
+      this.offers.splice(offerToDeleteIndex,1);
+
+      //? Mettre à jour le subscribe
+      this.dispachOffers();
+
+      return offerToDelete;
+
+    } catch (error) {
+      throw error;
+    }
   }
 
   private uploadPhoto(photo: any): Promise<string> {
     return new Promise((resolve, reject) => {
-      const upload = this.storage.upload('offers/'+ Date.now().toString() + '-' +photo.name, photo); // on créé un chemin unique en concaténant le nom du fichier et la date d'upload
+      const upload = this.storage.upload('offers/'+ Date.now().toString() + '-' + photo.name, photo); // on créé un chemin unique en concaténant le nom du fichier et la date d'upload
       upload
         .then((res) =>resolve(res.ref.getDownloadURL())) //On récupère ici l'URL du ffichier une fois qu'il a été upload dans Firebase
         .catch(reject);
-    })
+    });
+  }
+
+  private removePhoto(photoUrl: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.storage.refFromURL(photoUrl).delete().subscribe({
+        complete: () => resolve({}), //ici on resolve rien en cas de succès
+        error: reject //ici on reject en cas d'erreur
+      });
+    });
   }
 }
