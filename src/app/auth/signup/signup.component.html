@@ -22,7 +22,7 @@
             <label for="signupCguCheck" class="form-check-label">En cochant cette case vous acceptez les conditons générales d'utilisation</label>
           </div>
           <div class="d-flex">
-            <button class="btn btn-primary mx-auto" type="submit" [disabled]="signupForm.invalid">Inscription</button>
+            <button class="btn btn-primary mx-auto" type="submit" [disabled]="signupForm.invalid || signupForm.value.password !== signupForm.value.passwordConfirm">Inscription</button>
           </div>
         </form>
       </div>
