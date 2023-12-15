@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { Offer } from 'src/app/Interfaces/offer';
+import { Offer } from 'src/app/interfaces/offer';
 import { OffersService } from 'src/app/services/offers.service';
 
 @Component({

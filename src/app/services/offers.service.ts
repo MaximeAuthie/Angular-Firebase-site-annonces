@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Offer } from 'src/app/Interfaces/offer';
+import { Offer } from 'src/app/interfaces/offer';
 
 @Injectable({
   providedIn: 'root'
