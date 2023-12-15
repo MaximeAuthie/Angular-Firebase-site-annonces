@@ -1,12 +1,22 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { BehaviorSubject } from 'rxjs';
+import { User } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(private auth: AngularFireAuth) { }
+  currentUserSubject = new BehaviorSubject<User | null>(null);
+
+  constructor(private auth: AngularFireAuth) {
+
+    //? Détecter un changement dans l'état d'authentification pour émettre le nouvel état via un suscribe
+    this.auth.onAuthStateChanged(user => {
+      this.currentUserSubject.next(user);
+    }, console.error);
+  }
 
   signupUser(email:string, password: string): Promise<any> {
     return new Promise ((resolve, reject) => {
@@ -22,6 +32,17 @@ export class AuthService {
     return new Promise ((resolve, reject) => {
       this.auth.signInWithEmailAndPassword(email, password)
         .then(resolve)
+        .catch(reject)
+    })
+  }
+
+  signoutUser(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.auth.signOut()
+        .then(() => {
+          this.currentUserSubject.next(null);
+          resolve();
+        })
         .catch(reject)
     })
   }
