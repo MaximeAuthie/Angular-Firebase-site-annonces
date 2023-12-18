@@ -1,1 +1,33 @@
-<p>edit-profile works!</p>
+<div class="shadow p-5 bg-white rounded mb-5" *ngIf="currentUser">
+  <h2 class="display-6">Profil</h2>
+  <hr class="bg-dark">
+  <div class="d-flex">
+    <p class="fw-blod my-auto">
+      Nom d'utilisateur
+    </p>
+    <p class="ms-auto my-auto">
+      <span *ngIf="currentUser.displayName && currentUser.displayName !== ''">{{ currentUser.displayName }}</span>
+      <span *ngIf="!currentUser.displayName || currentUser.displayName && currentUser.displayName === ''" class="fst-italic">Sans nom</span>
+    </p>
+    <button class="btn btn-link ms-2" (click)="onEditUsername(usernameFormModal)">Modifier</button>
+  </div>
+</div>
+
+<ng-template #usernameFormModal let-modal>
+  <form [formGroup]="usernameForm" (ngSubmit)="onSubmitUsernameFform()">
+    <div class="modal-header">
+      <h5 class="modal-title">Nom d'utilisateur</h5>
+      <button class="btn-close" type="button" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="usernameInput">Nom d'utilisateur</label>
+        <input class="form-control" formControlName="username" type="text" placeholder="Ex; John Doe" id="usernameInput">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" type="button" (click)="modal.dismiss()">Annuler</button>
+      <button type="submit" class="btn btn-success">Enregistrer</button>
+    </div>
+  </form>
+</ng-template>
