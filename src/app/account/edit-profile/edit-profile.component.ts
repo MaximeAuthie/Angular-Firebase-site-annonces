@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { Form, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { User } from 'src/app/interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-edit-profile',
@@ -13,8 +14,9 @@ export class EditProfileComponent implements OnChanges, OnInit {
   @Input() currentUser!: User;
 
   usernameForm!: FormGroup;
+  emailForm!: FormGroup;
 
-  constructor(private modalService: NgbModal, private formBuilder: FormBuilder) {
+  constructor(private modalService: NgbModal, private formBuilder: FormBuilder, private authService: AuthService) {
 
   }
 
@@ -24,6 +26,7 @@ export class EditProfileComponent implements OnChanges, OnInit {
 
   ngOnInit(): void {
     this.initUsernameForm();
+    this.initEmailForm();
   }
 
   initUsernameForm(): void {
@@ -32,16 +35,32 @@ export class EditProfileComponent implements OnChanges, OnInit {
     })
   }
 
+  initEmailForm(): void {
+    this.emailForm = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]]
+    })
+  }
+
   onEditUsername(modal: any): void {
 
-    //? Récupérer le norm de l'utilsateur actuel et l'ajouter dans le champs "username" du formulaire
+    //? Récupérer le nom de l'utilsateur actuel et l'ajouter dans le champs "username" du formulaire
     this.usernameForm.get('username')?.setValue(this.currentUser.displayName);
 
     //? Ouvrir la modal en la centrant sur la page
     this.modalService.open(modal, {centered: true});
   }
 
-  onSubmitUsernameFform(): void {
+  onEditEmail(modal: any): void {
+
+    //? Récupérer l'adresse email de l'utilisateur actuel et l'ajouter dans le champs "email" du formulaire
+    this.emailForm.get('email')?.setValue(this.currentUser.email);
+
+    //? Ouvrir la modal en la centrant sur la page
+    this.modalService.open(modal, {centered: true});
+  }
+
+  onSubmitUsernameForm(): void {
     this.currentUser.updateProfile({displayName: this.usernameForm.value.username})
       .then(() => {
 
@@ -49,5 +68,22 @@ export class EditProfileComponent implements OnChanges, OnInit {
         this.modalService.dismissAll()
       })
       .catch(console.error)
+  }
+
+  onSubmitEmailForm(): void {
+
+    //? Il est indispensable de s'indentifier pour pouvoir modifuer l'adresse mail du compte
+    this.authService.signinUser(<string>this.currentUser.email, this.emailForm.value.password)
+      .then(() => {
+
+        //? Une fois l'authentification auprès de Firebase réussie, on modifier l'adresse mail du compte
+        this.currentUser.updateEmail(this.emailForm.value.email)
+          .then(() => {
+            this.modalService.dismissAll();
+            this.emailForm.reset();
+          })
+          .catch(console.error)
+      })
+      .catch(console.error);
   }
 }
