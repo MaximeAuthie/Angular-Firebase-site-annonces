@@ -11,7 +11,6 @@
     </p>
     <button class="btn btn-link ms-2" (click)="onEditUsername(usernameFormModal)">Modifier</button>
   </div>
-  <hr class="bg-dark">
   <div class="d-flex">
     <p class="fw-blod my-auto">
       Adresse email
@@ -37,7 +36,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" type="button" (click)="modal.dismiss()">Annuler</button>
-      <button type="submit" class="btn btn-success">Enregistrer</button>
+      <button type="submit" class="btn btn-success" [disabled]="usernameForm.invalid">Enregistrer</button>
     </div>
   </form>
 </ng-template>
@@ -60,7 +59,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" type="button" (click)="modal.dismiss()">Annuler</button>
-      <button type="submit" class="btn btn-success">Enregistrer</button>
+      <button type="submit" class="btn btn-success" [disabled]="emailForm.invalid">Enregistrer</button>
     </div>
   </form>
 </ng-template>
