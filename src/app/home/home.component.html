@@ -8,7 +8,7 @@
           <h5 class="card-title">{{ offer.title }} {{ offer.price | currency: 'EUR':'symbol':'4.2-2':'fr' }}</h5>
           <h6 class="fw-normal fs-5">{{ offer.brand }} {{ offer.model }}</h6>
           <p class="card-text">{{ offer.description }}</p>
-          <a href="#" class="btn btn-primary">Voir</a>
+          <a [routerLink]="['/offers',offer.id]" class="btn btn-primary">Voir</a>
         </div>
       </div>
     </div>

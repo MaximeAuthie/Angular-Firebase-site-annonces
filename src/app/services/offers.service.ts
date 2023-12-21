@@ -54,7 +54,17 @@ export class OffersService {
       //? Transformer l'objet offerSnapshopValue en array
       const offersArray = Object.keys(offerSnapshopValue).map((id) => ({id, ...offerSnapshopValue[id]}));
 
-      console.log(offersArray);
+    })
+  }
+
+  getOfferById(offerId: string): Promise<Offer> {
+    return new Promise((resolve, reject) => {
+      this.db.database.ref(`offers/${offerId}`).once('value', (snapshot, error) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(snapshot.val());
+      })
 
     })
   }
