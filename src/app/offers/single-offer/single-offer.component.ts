@@ -18,6 +18,6 @@ export class SingleOfferComponent implements OnInit {
       const offerId = this.activatedRoute.snapshot.paramMap.get('id');
       this;this.offersService.getOfferById(<string>offerId)
         .then((offer) => this.currentOffer = offer)
-        .catch(console.error)
+        .catch(console.error);
   }
 }
